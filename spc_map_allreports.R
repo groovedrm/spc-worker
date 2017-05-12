@@ -20,17 +20,19 @@ urlTornadoSuffix <- as.character("_rpts_torn.csv")
 urlHailSuffix <- as.character("_rpts_hail.csv")
 urlWindSuffix <- as.character("_rpts_wind.csv")
 urlSuffix <- c(urlTornadoSuffix, urlHailSuffix, urlWindSuffix)
-userDate <- trimws(as.character(readUserDate(), which = "both"))
+userDate <- gsub(" ", "", as.character(readUserDate()), fixed = TRUE)
 
 # Loop through the URLS and download the reports
 for(rpts in urlSuffix) {
-  download.file(paste(urlBase, userDate, rpts), paste(userDate, rpts))
+  download_url <- gsub(" ", "", paste(urlBase, userDate, rpts), fixed = TRUE)
+  local_file <- gsub(" ", "", paste(userDate, rpts), fixed = TRUE)
+  download.file(download_url, local_file)
 }
 
 # Read in files
-spcTornado <- read.table(paste(userDate, urlTornadoSuffix), header = TRUE, sep = ",")
-spcHail <- read.table(paste(userDate, urlHailSuffix), header = TRUE, sep = ",")
-spcWind <- read.table(paste(userDate, urlWindSuffix), header = TRUE, sep = ",")
+spcTornado <- read.table(paste(userDate, urlTornadoSuffix, sep=""), header = TRUE, sep = ",")
+spcHail <- read.table(paste(userDate, urlHailSuffix, sep=""), header = TRUE, sep = ",")
+spcWind <- read.table(paste(userDate, urlWindSuffix, sep=""), header = TRUE, sep = ",")
 
 # Do some work to transform file for map
 spcTorCoords <- as.data.frame(cbind("Torn", lon=spcTornado$Lon, lat=spcTornado$Lat))
