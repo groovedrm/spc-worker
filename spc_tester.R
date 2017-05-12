@@ -5,15 +5,13 @@ is.installed <- function(mypkg){
   is.element(mypkg, installed.packages()[,1])
 }
 
+library(leaflet)
+library(htmlwidgets)
+
 # Function to grab the date from the user
 readUserDate <- function() {
   d <- readline(prompt = "Enter a date in format YYMMDD: ")
   return(as.integer(d))
-}
-
-# Install Google Maps package if not already installed
-if (!is.installed("plotGoogleMaps")){
-  install.packages("plotGoogleMaps")
 }
 
 # Get the file from SPC
@@ -32,11 +30,15 @@ for(rpts in urlSuffix) {
 # Read in hail file
 spcHail <- read.table(paste(userDate, urlHailSuffix), header = TRUE, sep = ",")
 
-# Do some work to transform file for Google
+# Do some work to transform file for map
 spcHailCoords <- as.data.frame(cbind(lon=spcHail$Lon, lat=spcHail$Lat))
-coordinates(spcHailCoords) <- ~lon+lat
-proj4string(spcHailCoords) <- CRS("+init=epsg:4326")
-a <- plotGoogleMaps(spcHailCoords)
+coordinates <- spcHailCoords$lon ~ spcHailCoords$lat
 
+# Make the map
+tileURL <- "https://api.mapbox.com/styles/v1/groovedrm/cj2l0hs94000u2rqmq1v0kwxi/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZ3Jvb3ZlZHJtIiwiYSI6ImNpeXd5eDhiajAwMnkyd3J4ZXczeTh3ZWMifQ.FhscYf_rrnnmAwPbsj6Osg"
+m <- leaflet(data = spcHailCoords) %>%
+  addTiles(tileURL) %>%
+  addCircles(radius = 1, weight = 5) 
 
+saveWidget(m, file="map.html")
 
